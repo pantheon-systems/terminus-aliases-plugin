@@ -1,0 +1,12 @@
+/vendor
+/*.phar
+/phpunit.xml
+
+/builds
+
+.DS_Store
+*.sw*
+.env
+.idea
+.vagrant
+Vagrantfile

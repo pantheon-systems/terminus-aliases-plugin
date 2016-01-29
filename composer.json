@@ -1,0 +1,12 @@
+{
+  "name": "pantheon-systems/all-aliases-plugin",
+  "description": "A plugin for Terminus which creates a complete aliases file.",
+  "homepage": "https://github.com/pantheon-systems/all-aliases-plugin",
+  "license": "MIT",
+  "require": {
+    "php": ">=5.5"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^5.1"
+  }
+}
