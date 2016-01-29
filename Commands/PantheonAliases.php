@@ -5,7 +5,6 @@ namespace Terminus\Commands;
 use Terminus\Auth;
 use Terminus\Commands\TerminusCommand;
 use Terminus\Exceptions\TerminusException;
-use Terminus\Helpers\Input;
 use Terminus\Models\Collections\Sites;
 use Terminus\Session;
 
@@ -39,7 +38,7 @@ class PantheonAliases extends TerminusCommand {
    * @subcommand aliases
    */
   public function allAliases($args, $assoc_args) {
-    $location = Input::optional(
+    $location = $this->input()->optional(
       [
         'key'     => 'location',
         'choices' => $assoc_args,
