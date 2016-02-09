@@ -2,7 +2,6 @@
 
 namespace Terminus\Commands;
 
-use Terminus\Auth;
 use Terminus\Commands\TerminusCommand;
 use Terminus\Exceptions\TerminusException;
 use Terminus\Models\Collections\Sites;
@@ -22,8 +21,8 @@ class PantheonAliases extends TerminusCommand {
    * @return PantheonAliases
    */
   public function __construct(array $options = []) {
-    Auth::ensureLogin();
     parent::__construct($options);
+    $this->helpers->auth->ensureLogin();
   }
 
   /**
