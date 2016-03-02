@@ -85,39 +85,30 @@ class PantheonAliases extends TerminusCommand {
    * @throws TerminusException
    */
   private function constructAlias($environment) {
-    $site_name   = $environment->site->get('name');
-    $site_id     = $environment->site->get('id');
-    $env_id      = $environment->get('id');
-    $db_bindings = $environment->bindings->getByType('dbserver');
-    $hostnames   = array_keys((array)$environment->getHostnames());
-    if (empty($hostnames) || empty($db_bindings)) {
+    $info      = $environment->connectionInfo();
+    $site_name = $environment->site->get('name');
+    $site_id   = $environment->site->get('id');
+    $env_id    = $environment->get('id');
+    $hostnames = method_exists($environment, 'getHostnames') ? array_keys((array)$environment->getHostnames()) : $environment->hostnames->ids();
+
+    if (empty($hostnames)) {
       throw new TerminusException(
         'No hostname entry for {site}.{env}',
         ['site' => $site_name, 'env' => $env_id,],
         1
       );
     }
-    $db_binding = array_shift($db_bindings);
-    $uri        = array_shift($hostnames);
-    $db_pass    = $db_binding->get('password');
-    $db_port    = $db_binding->get('port');
-    if (strpos(TERMINUS_HOST, 'onebox') !== false) {
-      $remote_user = "appserver.$env_id.$site_id";
-      $remote_host = TERMINUS_HOST;
-      $db_url      = "mysql://pantheon:$db_pass@$remote_host:$db_port";
-      $db_url     .= '/pantheon';
-    } else {
-      $remote_user = "$env_id.$site_id";
-      $remote_host = "appserver.$env_id.$site_id.drush.in";
-      $db_url      = "mysql://pantheon:$db_pass@dbserver.$environment.$site_id";
-      $db_url     .= ".drush.in:$db_port/pantheon";
-    }
+
+    $uri = array_shift($hostnames);
+    $db_url = $info['mysql_url'];
+    $remote_host = $info['sftp_host'];
+    $remote_user = $info['sftp_username'];
     $output = "array(
-    'uri'              => $uri,
-    'db-url'           => $db_url,
+    'uri'              => '$uri',
+    'db-url'           => '$db_url',
     'db-allows-remote' => true,
-    'remote-host'      => $remote_host,
-    'remote-user'      => $remote_user,
+    'remote-host'      => '$remote_host',
+    'remote-user'      => '$remote_user',
     'ssh-options'      => '-p 2222 -o \"AddressFamily inet\"',
     'path-aliases'     => array(
       '%files'        => 'code/sites/default/files',
