@@ -34,6 +34,12 @@ class PantheonAliases extends TerminusCommand {
    * [--print]
    * : Print out the aliases after generation
    *
+   * [--org-only]
+   * : Only output organizational aliases
+   *
+   * [--team-only]
+   * : Only output team aliases
+   *
    * @subcommand aliases
    */
   public function allAliases($args, $assoc_args) {
@@ -58,7 +64,11 @@ class PantheonAliases extends TerminusCommand {
       mkdir($dirname, 0700, true);
     }
 
-    $content = $this->getAliases();
+    $options = [
+      'org_only'  => isset($assoc_args['org-only']),  
+      'team_only' => isset($assoc_args['team-only']),  
+    ];
+    $content = $this->getAliases($options);
     $handle  = fopen($location, 'w+');
     fwrite($handle, $content);
     fclose($handle);
@@ -99,11 +109,11 @@ class PantheonAliases extends TerminusCommand {
       );
     }
 
-    $uri = array_shift($hostnames);
-    $db_url = $info['mysql_url'];
+    $uri         = array_shift($hostnames);
+    $db_url      = $info['mysql_url'];
     $remote_host = $info['sftp_host'];
     $remote_user = $info['sftp_username'];
-    $output = "array(
+    $output      = "array(
     'uri'              => '$uri',
     'db-url'           => '$db_url',
     'db-allows-remote' => true,
@@ -121,15 +131,29 @@ class PantheonAliases extends TerminusCommand {
   /**
    * Requests API data and returns aliases
    *
+   * @param array $arg_options Elements as follow:
+   *    boolean org_only  Set to true for only organizational aliases
+   *    boolean team_only Set to true for only team aliases
    * @return string
    */
-  private function getAliases() {
+  private function getAliases(array $arg_options = []) {
+    $default_options = [
+      'org_only'  => false,
+      'team_only' => false,
+    ];
+    $options         = array_merge($default_options, $arg_options);
+
     $user         = Session::getUser();
     $alias_string = $user->getAliases();
+    if ($options['team_only']) {
+      return $alias_string;
+    }
+
     eval(str_replace('<?php', '', $alias_string));
-    $formatted_aliases = substr($alias_string, 0, -1);
+    $team_aliases = substr($alias_string, 0, -1);
     $sites_object = new Sites();
     $sites        = $sites_object->all();
+    $org_aliases  = '';
     foreach ($sites as $site) {
       $environments = $site->environments->all();
       foreach ($environments as $environment) {
@@ -138,15 +162,20 @@ class PantheonAliases extends TerminusCommand {
           break;
         }
         try {
-          $formatted_aliases .= PHP_EOL . "  \$aliases['$key'] = ";
-          $formatted_aliases .= $this->constructAlias($environment);
+          $org_aliases .= PHP_EOL . "  \$aliases['$key'] = ";
+          $org_aliases .= $this->constructAlias($environment);
         } catch (TerminusException $e) {
           continue;
         }
       }
     }
-    $formatted_aliases .= PHP_EOL;
-    return $formatted_aliases;
+
+    if ($options['org_only']) {
+      $org_aliases .= PHP_EOL;
+      return $org_aliases;
+    }
+    $all_aliases = $alias_string . $org_aliases . PHP_EOL;
+    return $all_aliases;
   }
 
 }
