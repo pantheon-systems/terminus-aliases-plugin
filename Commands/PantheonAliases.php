@@ -152,7 +152,7 @@ class PantheonAliases extends TerminusCommand {
     eval(str_replace('<?php', '', $alias_string));
     $team_aliases = substr($alias_string, 0, -1);
     $sites_object = new Sites();
-    $sites        = $sites_object->all();
+    $sites        = $sites_object->fetch()->all();
     $org_aliases  = '';
     foreach ($sites as $site) {
       $environments = $site->environments->all();
