@@ -39,7 +39,7 @@ class DrushRcEmitterTest extends TestCase
         $aliasCollection = Fixtures::aliasCollection($rawAliasData, $withDbUrl);
         $location = Fixtures::mktmpdir() . '/.drush/pantheon.aliases.drushrc.php';
 
-        $emitter = new AliasesDrushrcEmitter($location);
+        $emitter = new AliasesDrushRcEmitter($location);
         $emitter->write($aliasCollection);
         $this->assertFileExists($location);
         $actual = file_get_contents($location);
