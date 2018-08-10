@@ -1,0 +1,12 @@
+{{env_name}}:
+  host: appserver.{{env_name}}.{{site_id}}.drush.in
+##options:
+##  db-allows-remote: true
+##  db-url: 'mysql://pantheon:{{db_password}}@dbserver.{{env_name}}.{{site_id}}.drush.in:{{db_port}}/pantheon'
+  paths:
+    files: files
+    drush-script: drush9
+  uri: {{env_name}}-{{site_name}}.pantheonsite.io
+  user: {{env_name}}.{{site_id}}
+  ssh:
+    options: '-p 2222 -o "AddressFamily inet"'

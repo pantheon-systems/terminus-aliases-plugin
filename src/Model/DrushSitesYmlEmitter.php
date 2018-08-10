@@ -42,28 +42,6 @@ class DrushSitesYmlEmitter implements AliasEmitterInterface
 
     protected function getAliasFragment($alias)
     {
-        $site_name = $alias->siteName();
-        $env_name = $alias->envName();
-        $site_id = $alias->siteId();
-        $db_password = $alias->dbPassword();
-        $db_port = $alias->dbPort();
-
-        $alias_fragment = <<<EOT
-{$env_name}:
-  host: appserver.{$env_name}.{$site_id}.drush.in
-  options:
-    db-allows-remote: true
-    db-url: 'mysql://pantheon:{$db_password}@dbserver.{$env_name}.{$site_id}.drush.in:{$db_port}/pantheon'
-    strict: 0
-  paths:
-    files: files
-    drush-script: drush9
-  uri: d{$env_name}-{$site_name}.pantheonsite.io
-  user: {$env_name}.{$site_id}
-  ssh:
-    options: '-p 2222 -o "AddressFamily inet"'
-EOT;
-
-        return $alias_fragment;
+        return Template::process('fragment.site.yml.tmpl', $alias->replacements());
     }
 }

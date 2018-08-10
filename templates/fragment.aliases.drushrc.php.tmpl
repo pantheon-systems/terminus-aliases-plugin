@@ -1,0 +1,12 @@
+  $aliases['{{site_name}}.{{env_name}}'] = array(
+    'uri' => '{{env_name}}-{{site_name}}.pantheonsite.io',
+##  'db-url' => 'mysql://pantheon:{{db_password}}@dbserver.{{env_name}}.{{site_id}}.drush.in:{{db_port}}/pantheon',
+##  'db-allows-remote' => TRUE,
+    'remote-host' => 'appserver.{{env_name}}.{{site_id}}.drush.in',
+    'remote-user' => '{{env_name}}.{{site_id}}',
+    'ssh-options' => '-p 2222 -o "AddressFamily inet"',
+    'path-aliases' => array(
+      '%files' => 'files',
+      '%drush-script' => 'drush',
+     ),
+  );

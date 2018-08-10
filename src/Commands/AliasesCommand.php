@@ -166,8 +166,8 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
             // $this->log()->notice(var_export($site->getEnvironments()->serialize(), true));
 
             foreach ($site->getEnvironments()->all() as $env_name => $env) {
-                $db_password = 'DBPW_TBD';
-                $db_port = 'DBPORT_TBD';
+                $db_password = '';
+                $db_port = '';
                 $alias = new AliasData($site_name, $env_name, $site_id, $db_password, $db_port);
 
                 $collection->add($alias);

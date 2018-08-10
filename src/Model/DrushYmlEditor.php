@@ -38,8 +38,7 @@ class DrushYmlEditor
         if (file_exists($drushYmlPath)) {
             $drushYmlContents = file_get_contents($drushYmlPath);
         } else {
-            $exampledrushYml = dirname(dirname(__DIR__)) . "/templates/example.drush.yml";
-            $drushYmlContents = file_get_contents($exampledrushYml);
+            $drushYmlContents = Template::load('initial.drush.yml');
         }
         $drushYml = Yaml::parse($drushYmlContents);
         $this->comments = new Comments();

@@ -57,6 +57,11 @@ class AliasData
         return $this->db_password;
     }
 
+    public function hasDbPassword()
+    {
+        return !empty($this->dbPassword());
+    }
+
     public function setDbPassword($db_password)
     {
         $this->db_password = $db_password;
@@ -70,6 +75,19 @@ class AliasData
     public function setDbPort($db_port)
     {
         $this->db_port = $db_port;
+    }
+
+    public function replacements()
+    {
+        $replacements = [
+            '{{site_name}}' => $this->siteName(),
+            '{{env_name}}' => $this->envName(),
+            '{{site_id}}' => $this->siteId(),
+            '{{db_password}}' => $this->dbPassword(),
+            '{{db_port}}' => $this->dbPort(),
+        ];
+
+        return array_filter($replacements);
     }
 
     /**
