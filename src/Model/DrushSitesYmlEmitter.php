@@ -9,7 +9,7 @@ class DrushSitesYmlEmitter implements AliasEmitterInterface
     protected $base_dir;
     protected $home;
 
-    public function __construct($base_dir, $home, $target_name)
+    public function __construct($base_dir, $home, $target_name = 'pantheon')
     {
         $this->base_dir = $base_dir;
         $this->home = $home;

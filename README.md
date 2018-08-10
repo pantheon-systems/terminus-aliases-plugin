@@ -24,7 +24,7 @@ mkdir -p ~/.terminus/plugins
 cd ~/.terminus/plugins
 git clone git@github.com:pantheon-systems/terminus-aliases-plugin.git
 cd terminus-aliases-plugin
-composer install
+composer install --no-dev
 ```
 
 This will be replaced with a `composer create-project` method in the future.

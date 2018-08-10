@@ -29,7 +29,7 @@ class AliasCollection
 
     public function all()
     {
-        ksort($this->aliases);
+        uksort($this->aliases, 'strnatcmp');
         return $this->aliases;
     }
 

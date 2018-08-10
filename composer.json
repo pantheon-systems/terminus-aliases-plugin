@@ -6,8 +6,16 @@
     "autoload": {
         "psr-4": { "Pantheon\\TerminusAliases\\": "src" }
     },
+    "autoload-dev": {
+        "psr-4": { "Pantheon\\TerminusAliases\\": "tests/src" }
+    },
     "require": {
         "consolidation/comments": "^1.0"
+    },
+    "require-dev": {
+        "symfony/yaml": "^3.2",
+        "symfony/console": "^3",
+        "symfony/filesystem": "^3"
     },
     "scripts": {
         "cs": "phpcs --standard=PSR2 -n src",

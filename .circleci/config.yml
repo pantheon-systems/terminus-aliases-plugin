@@ -25,9 +25,9 @@ jobs:
             - run:
                 name: Unit
                 command: composer unit
-            - run:
-                name: Functional
-                command: composer functional
+#            - run:
+#                name: Functional
+#                command: composer functional
     code-style:
         <<: *defaults
         steps:
