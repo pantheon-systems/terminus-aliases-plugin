@@ -49,6 +49,7 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
             'base' => false,
             'print' => false,
             'location' => null,
+            'db-url' => true,
             'target' => 'pantheon',
         ]
     ) {
@@ -56,7 +57,7 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
         $site_ids = $this->getSites($options);
 
         // Collect information on the requested sites
-        $collection = $this->getAliasCollection($site_ids);
+        $collection = $this->getAliasCollection($site_ids, $options['db-url']);
 
         // Write the alias files (only of the type requested)
         $this->log()->notice("Writing alias files...");
@@ -148,7 +149,7 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
         return $emitterType === $checkType;
     }
 
-    protected function getAliasCollection($site_ids)
+    protected function getAliasCollection($site_ids, $include_db_url = true)
     {
         $collection = new AliasCollection();
 
@@ -168,6 +169,11 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
             foreach ($site->getEnvironments()->all() as $env_name => $env) {
                 $db_password = '';
                 $db_port = '';
+                $dbInfo = $env->databaseConnectionInfo();
+                if ($include_db_url && !empty($dbInfo)) {
+                    $db_password = $dbInfo['password'];
+                    $db_port = $dbInfo['port'];
+                }
                 $alias = new AliasData($site_name, $env_name, $site_id, $db_password, $db_port);
 
                 $collection->add($alias);
