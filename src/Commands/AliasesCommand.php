@@ -21,6 +21,7 @@ use Pantheon\Terminus\Site\SiteAwareTrait;
 use Pantheon\TerminusAliases\Model\AliasCollection;
 use Pantheon\TerminusAliases\Model\AliasData;
 use Pantheon\TerminusAliases\Model\AliasesDrushRcEmitter;
+use Pantheon\TerminusAliases\Model\PrintingEmitter;
 use Pantheon\TerminusAliases\Model\DrushSitesYmlEmitter;
 
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -41,6 +42,7 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
      */
     public function allAliases(
         $options = [
+            'mine-only' => false,
             'org' => 'all',
             'team' => false,
             'type' => 'all',
@@ -51,8 +53,36 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
         ]
     ) {
         $this->log()->notice("Fetching list of available Pantheon sites...");
+        $site_ids = $this->getSites($options);
 
-        // Look up all available sites, as filtered by --org and --team
+        // Collect information on the requested sites
+        $collection = $this->getAliasCollection($site_ids);
+
+        // Write the alias files (only of the type requested)
+        $this->log()->notice("Writing alias files...");
+        $emitters = $this->getAliasEmitters($options);
+        foreach ($emitters as $emitter) {
+            $this->log()->debug("Emitting aliases via {emitter}", ['emitter' => get_class($emitter)]);
+            $emitter->write($collection);
+        }
+    }
+
+    /**
+     * Fetch those sites indicated by the commandline options.
+     */
+    protected function getSites($options)
+    {
+        if ($options['mine-only']) {
+            return $this->getSitesWithDirectMembership();
+        }
+        return $this->getAllSites($options);
+    }
+
+    /**
+     * Look up all available sites, as filtered by --org and --team
+     */
+    protected function getAllSites($options)
+    {
         $user = $this->session()->getUser();
         $this->sites()->fetch(
             [
@@ -60,17 +90,25 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
                 'team_only' => isset($options['team']) ? $options['team'] : false,
             ]
         );
+        return $this->sites->ids();
+    }
 
-        // Collect information on the available sites
-        $site_ids = $this->sites->ids();
-        $collection = $this->getAliasCollection($site_ids);
+    /**
+     * Look up those sites that the user has a direct membership in
+     * (excluding sites )
+     */
+    protected function getSitesWithDirectMembership()
+    {
+        $user = $this->session()->getUser();
+        $memberships = $user->getSiteMemberships();
+        $site_ids = [];
 
-        // Write the alias files (only of the type requested)
-        $this->log()->notice("Writing alias files...");
-        $emitters = $this->getAliasEmitters($options);
-        foreach ($emitters as $emitter) {
-            $emitter->write($collection);
+        foreach ($memberships->ids() as $membership_id) {
+            $membership = $memberships->get($membership_id);
+            $site = $membership->get('site');
+            $site_ids[] = $site->id;
         }
+        return $site_ids;
     }
 
     /**
@@ -84,13 +122,13 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
         $target_name = $options['target'];
         $emitterType = $options['type'];
         if ($options['print']) {
-            $emitterType == 'print';
+            $emitterType = 'print';
         }
         $location = !empty($options['location']) ? $options['location'] : "$base_dir/$target_name.aliases.drushrc.php";
         $emitters = [];
 
         if ($this->emitterTypeMatches($emitterType, 'print', false)) {
-            $emitters[] = new PrintingEmitter($base_dir);
+            $emitters[] = new PrintingEmitter($this->output());
         }
         if ($this->emitterTypeMatches($emitterType, 'php')) {
             $emitters[] = new AliasesDrushRcEmitter($location);

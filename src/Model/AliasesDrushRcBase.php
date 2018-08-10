@@ -17,6 +17,8 @@ abstract class AliasesDrushRcBase implements AliasEmitterInterface
                 $alias_file_contents .= $alias_fragment . "\n";
             }
         }
+
+        return $alias_file_contents;
     }
 
     protected function getAliasHeader()
