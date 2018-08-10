@@ -13,9 +13,13 @@
         "consolidation/comments": "^1.0"
     },
     "require-dev": {
-        "symfony/yaml": "^3.2",
-        "symfony/console": "^3",
-        "symfony/filesystem": "^3"
+        "symfony/yaml": "3.4.11",
+        "symfony/console": "3.4.4",
+        "symfony/filesystem": "3.4.11",
+
+        "symfony/polyfill-ctype": "1.8.0",
+        "symfony/polyfill-mbstring": "1.8.0",
+        "symfony/debug": "3.4.11"
     },
     "scripts": {
         "cs": "phpcs --standard=PSR2 -n src",
