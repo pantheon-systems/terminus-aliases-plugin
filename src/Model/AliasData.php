@@ -13,7 +13,7 @@ class AliasData
     protected $db_password;
     protected $db_port;
 
-    public function __construct($site_name, $env_name, $site_id, $db_password, $db_port)
+    public function __construct($site_name, $env_name, $site_id, $db_password = '', $db_port = '')
     {
         $this->site_name = $site_name;
         $this->env_name = $env_name;
@@ -34,6 +34,17 @@ class AliasData
 
     public function envName()
     {
+        if ($this->env_name == '*') {
+            return "'*'";
+        }
+        return $this->env_name;
+    }
+
+    public function envLabel()
+    {
+        if ($this->env_name == '*') {
+            return '${env-name}';
+        }
         return $this->env_name;
     }
 
@@ -82,6 +93,7 @@ class AliasData
         $replacements = [
             '{{site_name}}' => $this->siteName(),
             '{{env_name}}' => $this->envName(),
+            '{{env_label}}' => $this->envLabel(),
             '{{site_id}}' => $this->siteId(),
             '{{db_password}}' => $this->dbPassword(),
             '{{db_port}}' => $this->dbPort(),

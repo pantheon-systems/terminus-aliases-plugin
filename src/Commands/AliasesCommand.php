@@ -49,15 +49,18 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
             'base' => false,
             'print' => false,
             'location' => null,
-            'db-url' => true,
+            'db-url' => false,
             'target' => 'pantheon',
         ]
     ) {
         $this->log()->notice("Fetching list of available Pantheon sites...");
         $site_ids = $this->getSites($options);
 
+        // Do the faster thing if only yml aliases were requested
+        $useWildcardForm = $options['type'] == 'yml';
+
         // Collect information on the requested sites
-        $collection = $this->getAliasCollection($site_ids, $options['db-url']);
+        $collection = $this->getAliasCollection($site_ids, $options['db-url'], $useWildcardForm);
 
         // Write the alias files (only of the type requested)
         $this->log()->notice("Writing alias files...");
@@ -149,7 +152,7 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
         return $emitterType === $checkType;
     }
 
-    protected function getAliasCollection($site_ids, $include_db_url = true)
+    protected function getAliasCollection($site_ids, $include_db_url = true, $useWildcardForm = false)
     {
         $collection = new AliasCollection();
 
@@ -163,21 +166,31 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
             //$this->log()->notice($site->get('id'));
             $site_name = $site->get('name');
 
-            $environments = $site->getEnvironments();
-            // $this->log()->notice(var_export($site->getEnvironments()->serialize(), true));
-
-            foreach ($site->getEnvironments()->all() as $env_name => $env) {
-                $db_password = '';
-                $db_port = '';
-                $dbInfo = $env->databaseConnectionInfo();
-                if ($include_db_url && !empty($dbInfo)) {
-                    $db_password = $dbInfo['password'];
-                    $db_port = $dbInfo['port'];
-                }
-                $alias = new AliasData($site_name, $env_name, $site_id, $db_password, $db_port);
-
+            if ($useWildcardForm) {
+                $alias = new AliasData($site_name, '*', $site_id);
                 $collection->add($alias);
             }
+            else {
+
+                $environments = $site->getEnvironments();
+                // $this->log()->notice(var_export($site->getEnvironments()->serialize(), true));
+
+                foreach ($site->getEnvironments()->all() as $env_name => $env) {
+                    $db_password = '';
+                    $db_port = '';
+                    if ($include_db_url) {
+                        $dbInfo = $env->databaseConnectionInfo();
+                        if (!empty($dbInfo)) {
+                            $db_password = $dbInfo['password'];
+                            $db_port = $dbInfo['port'];
+                        }
+                    }
+                    $alias = new AliasData($site_name, $env_name, $site_id, $db_password, $db_port);
+
+                    $collection->add($alias);
+                }
+            }
+
             $progressBar->advance();
         }
         $progressBar->finish();
