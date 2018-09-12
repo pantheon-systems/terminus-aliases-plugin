@@ -169,9 +169,7 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
             if ($useWildcardForm) {
                 $alias = new AliasData($site_name, '*', $site_id);
                 $collection->add($alias);
-            }
-            else {
-
+            } else {
                 $environments = $site->getEnvironments();
                 // $this->log()->notice(var_export($site->getEnvironments()->serialize(), true));
 
