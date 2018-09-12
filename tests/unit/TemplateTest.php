@@ -14,6 +14,7 @@ class TemplateTest extends TestCase
         $replacementsWithoutDbUrl = [
             '{{site_name}}' => 'MYSITE',
             '{{env_name}}' => 'MULTIDEV',
+            '{{env_label}}' => 'MULTIDEV',
             '{{site_id}}' => '00000000-0000-0000-0000-000000000000',
         ];
 
