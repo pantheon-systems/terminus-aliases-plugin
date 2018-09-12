@@ -44,7 +44,7 @@
     },
     "extra": {
         "terminus": {
-            "compatible-version": "^1"
+            "compatible-version": "^1.9"
         }
     }
 }
