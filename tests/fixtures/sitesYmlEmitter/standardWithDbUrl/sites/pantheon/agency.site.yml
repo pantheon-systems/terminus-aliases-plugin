@@ -10,6 +10,8 @@ live:
   user: live.00000000-0000-0000-0000-000000000000
   ssh:
     options: '-p 2222 -o "AddressFamily inet"'
+    tty: false
+
 
 test:
   host: appserver.test.11111111-1111-1111-1111-111111111111.drush.in
@@ -23,6 +25,8 @@ test:
   user: test.11111111-1111-1111-1111-111111111111
   ssh:
     options: '-p 2222 -o "AddressFamily inet"'
+    tty: false
+
 
 dev:
   host: appserver.dev.22222222-2222-2222-2222-222222222222.drush.in
@@ -36,6 +40,8 @@ dev:
   user: dev.22222222-2222-2222-2222-222222222222
   ssh:
     options: '-p 2222 -o "AddressFamily inet"'
+    tty: false
+
 
 feature8:
   host: appserver.feature8.33333333-3333-3333-3333-333333333333.drush.in
@@ -49,6 +55,8 @@ feature8:
   user: feature8.33333333-3333-3333-3333-333333333333
   ssh:
     options: '-p 2222 -o "AddressFamily inet"'
+    tty: false
+
 
 feature24:
   host: appserver.feature24.44444444-4444-4444-4444-444444444444.drush.in
@@ -62,6 +70,8 @@ feature24:
   user: feature24.44444444-4444-4444-4444-444444444444
   ssh:
     options: '-p 2222 -o "AddressFamily inet"'
+    tty: false
+
 
 feature101:
   host: appserver.feature101.55555555-5555-5555-5555-555555555555.drush.in
@@ -75,4 +85,4 @@ feature101:
   user: feature101.55555555-5555-5555-5555-555555555555
   ssh:
     options: '-p 2222 -o "AddressFamily inet"'
-
+    tty: false

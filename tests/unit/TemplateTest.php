@@ -32,6 +32,7 @@ MULTIDEV:
   user: MULTIDEV.00000000-0000-0000-0000-000000000000
   ssh:
     options: '-p 2222 -o "AddressFamily inet"'
+    tty: false
 EOT;
 
         $siteYmlWithDbUrl = <<<EOT
@@ -47,6 +48,7 @@ MULTIDEV:
   user: MULTIDEV.00000000-0000-0000-0000-000000000000
   ssh:
     options: '-p 2222 -o "AddressFamily inet"'
+    tty: false
 EOT;
 
         return [

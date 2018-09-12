@@ -10,8 +10,8 @@
   terminus --version
 }
 
-@test "get help on auth:hello command" {
-  run terminus help auth:hello
-  [[ $output == *"Say hello"* ]]
+@test "get help on alpha:aliases command" {
+  run terminus help alpha:aliases
+  [[ $output == *"Write Drush alias files"* ]]
   [ "$status" -eq 0 ]
 }
