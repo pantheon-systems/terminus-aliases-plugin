@@ -43,6 +43,7 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
     public function allAliases(
         $options = [
             'mine-only' => false,
+            'only' => '',
             'org' => 'all',
             'team' => false,
             'type' => 'all',
@@ -73,10 +74,23 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
      */
     protected function getSites($options)
     {
+        if ($options['only']) {
+            return $this->getSpecifiedSites(explode(',', $options['only']));
+        }
         if ($options['mine-only']) {
             return $this->getSitesWithDirectMembership();
         }
         return $this->getAllSites($options);
+    }
+
+    protected function getSpecifiedSites($siteList)
+    {
+        $result = [];
+        foreach ($siteList as $siteName) {
+            $site = $this->sites()->get($siteName);
+            $result[] = $site->id;
+        }
+        return $result;
     }
 
     /**
