@@ -49,9 +49,6 @@ class PantheonAliasPolicyCommands extends DrushCommands implements SiteAliasMana
             // that indicates failure.
             if ($host == $ip) {
                 $aliasName = $self->name();
-                // @todo: Convert 'appserver.*.' to 'appserver.dev.' and check
-                // again. If that works, give the error message below. If it
-                // fails, then report that the site does not exist.
                 throw new \Exception("The alias $aliasName refers to a multidev environment that does not exist.");
             }
         }
