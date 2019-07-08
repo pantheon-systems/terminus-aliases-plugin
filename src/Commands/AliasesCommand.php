@@ -26,6 +26,8 @@ use Pantheon\TerminusAliases\Model\DrushSitesYmlEmitter;
 
 use Symfony\Component\Console\Helper\ProgressBar;
 
+use Pantheon\Terminus\Helpers\LocalMachineHelper;
+
 /**
  * Generate lots of aliases
  */
