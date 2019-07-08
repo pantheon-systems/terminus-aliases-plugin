@@ -61,20 +61,8 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
             'target' => 'pantheon',
     ])
     {
-        $this->log()->notice("Fetching Drush 8 aliases...");
-        $aliases = $this->session()->getUser()->getAliases();
-        if (isset($options['print']) && $options['print']) {
-            return $aliases;
-        }
-        if (is_null($location = $options['location'])) {
-            $location = '~/.drush/pantheon.aliases.drushrc.php';
-        }
-
-        $this->getContainer()->get(LocalMachineHelper::class)->writeFile($location, $aliases);
-        $this->log()->notice('Drush 8 aliases file written to {location}.', ['location' => $location,]);
-
         $options['mine-only'] = !$options['all'];
-        $options['type'] = 'yaml';
+        $options['type'] = 'all';
         $options['db-url'] = false;
 
         $this->log()->notice("Fetching information to build Drush 9 aliases...");
@@ -84,10 +72,13 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
         $collection = $this->getAliasCollection($site_ids, $options['db-url'], true);
 
         // Write the alias files (only of the type requested)
-        $this->log()->notice("Writing alias files...");
         $emitters = $this->getAliasEmitters($options);
+        if (empty($emitters)) {
+            throw new \Exception('No emitters; nothing to do.');
+        }
         foreach ($emitters as $emitter) {
             $this->log()->debug("Emitting aliases via {emitter}", ['emitter' => get_class($emitter)]);
+            $this->log()->notice($emitter->notificationMessage());
             $emitter->write($collection);
         }
     }

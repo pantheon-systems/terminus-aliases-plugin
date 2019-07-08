@@ -13,6 +13,11 @@ class AliasesDrushRcEmitter extends AliasesDrushRcBase
         $this->location = $location;
     }
 
+    public function notificationMessage()
+    {
+        return 'Writing Drush 8 alias file to ' . $this->location;
+    }
+
     public function write(AliasCollection $collection)
     {
         $alias_file_contents = $this->getAliasContents($collection);

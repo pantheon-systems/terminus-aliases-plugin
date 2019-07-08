@@ -13,6 +13,11 @@ class PrintingEmitter extends AliasesDrushRcBase
         $this->output = $output;
     }
 
+    public function notificationMessage()
+    {
+        return 'Displaying Drush 8 alias file contents';
+    }
+
     public function write(AliasCollection $collection)
     {
         $alias_file_contents = $this->getAliasContents($collection);

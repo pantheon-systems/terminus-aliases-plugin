@@ -16,9 +16,16 @@ class DrushSitesYmlEmitter implements AliasEmitterInterface
         $this->target_name = $target_name;
     }
 
+    public function notificationMessage()
+    {
+        $pantheon_sites_dir = $this->pantheonSitesDir();
+
+        return 'Writing Drush 9 alias files to ' . $pantheon_sites_dir;
+    }
+
     public function write(AliasCollection $collection)
     {
-        $pantheon_sites_dir = $this->base_dir . '/sites/' . $this->target_name;
+        $pantheon_sites_dir = $this->pantheonSitesDir();
 
         $fs = new Filesystem();
         $fs->mkdir($pantheon_sites_dir);
@@ -43,5 +50,10 @@ class DrushSitesYmlEmitter implements AliasEmitterInterface
     protected function getAliasFragment($alias)
     {
         return Template::process('fragment.site.yml.tmpl', $alias->replacements());
+    }
+
+    protected function pantheonSitesDir()
+    {
+        return $this->base_dir . '/sites/' . $this->target_name;
     }
 }
