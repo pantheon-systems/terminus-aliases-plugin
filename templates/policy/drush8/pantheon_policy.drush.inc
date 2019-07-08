@@ -16,9 +16,6 @@ function pantheon_policy_drush_sitealias_alter(&$alias_record) {
     // that indicates failure.
     if ($host == $ip) {
       $aliasName = $alias_record['#name'];
-      // @todo: Convert 'appserver.*.' to 'appserver.dev.' and check
-      // again. If that works, give the error message below. If it
-      // fails, then report that the site does not exist.
       return drush_set_error('NO_SUCH_ALIAS', "The alias $aliasName refers to a multidev environment that does not exist.");
     }
   }
