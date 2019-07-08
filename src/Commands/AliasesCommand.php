@@ -34,33 +34,52 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
     use SiteAwareTrait;
 
     /**
-     * Write Drush alias files. Drush 8 php format and Drush 9 yml format files supported.
+     * Generates Pantheon Drush aliases for sites on which the currently logged-in user is on the team.
+     *
+     * @authenticated
      *
      * @command alpha:aliases
      *
-     * @authenticated
+     * @option boolean $print Print aliases only
+     * @option string $location Path and filename; default: ~/.drush/pantheon.aliases.drushrc.php will be used
+     *
+     * @return string|null
+     *
+     * @usage Saves Pantheon Drush aliases for sites on which the currently logged-in user is on the team to ~/.drush/pantheon.aliases.drushrc.php.
+     * @usage --print Displays Pantheon Drush 8 aliases for sites on which the currently logged-in user is on the team.
+     * @usage --location=<full_path> Saves Pantheon Drush 8 aliases for sites on which the currently logged-in user is on the team to <full_path>.
      */
-    public function allAliases(
-        $options = [
-            'mine-only' => false,
+    public function aliases($options = [
+        'print' => false,
+        'location' => null,
+            'all' => false,
             'org' => 'all',
             'team' => false,
-            'type' => 'all',
             'base' => false,
-            'print' => false,
-            'location' => null,
-            'db-url' => false,
             'target' => 'pantheon',
-        ]
-    ) {
-        $this->log()->notice("Fetching list of available Pantheon sites...");
+    ])
+    {
+        $this->log()->notice("Fetching Drush 8 aliases...");
+        $aliases = $this->session()->getUser()->getAliases();
+        if (isset($options['print']) && $options['print']) {
+            return $aliases;
+        }
+        if (is_null($location = $options['location'])) {
+            $location = '~/.drush/pantheon.aliases.drushrc.php';
+        }
+
+        $this->getContainer()->get(LocalMachineHelper::class)->writeFile($location, $aliases);
+        $this->log()->notice('Drush 8 aliases file written to {location}.', ['location' => $location,]);
+
+        $options['mine-only'] = !$options['all'];
+        $options['type'] = 'yaml';
+        $options['db-url'] = false;
+
+        $this->log()->notice("Fetching information to build Drush 9 aliases...");
         $site_ids = $this->getSites($options);
 
-        // Do the faster thing if only yml aliases were requested
-        $useWildcardForm = $options['type'] == 'yml';
-
         // Collect information on the requested sites
-        $collection = $this->getAliasCollection($site_ids, $options['db-url'], $useWildcardForm);
+        $collection = $this->getAliasCollection($site_ids, $options['db-url'], true);
 
         // Write the alias files (only of the type requested)
         $this->log()->notice("Writing alias files...");
