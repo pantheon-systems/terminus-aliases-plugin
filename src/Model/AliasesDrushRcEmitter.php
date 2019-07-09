@@ -29,16 +29,16 @@ class AliasesDrushRcEmitter extends AliasesDrushRcBase
         file_put_contents($this->location, $alias_file_contents);
 
         // Add in our directory location to the Drush alias file search path
-        $DrushRCEditor = new DrushRcEditor($this->base_dir);
-        $drushConfig = $DrushRCEditor->getDrushConfig();
-        $drushConfigFiltered = implode(array_filter($drushConfig, array($this, 'filterForPantheon')));
+        $drushRCEditor = new DrushRcEditor($this->base_dir);
+        $drushConfig = $drushRCEditor->getDrushConfig();
+        $drushConfigFiltered = implode("\n", array_filter($drushConfig, array($this, 'filterForPantheon')));
         $drushConfigFiltered .= "\n" . '$options["include"][] = drush_server_home() . "/.drush/pantheon/drush8";';
-        $DrushRCEditor->writeDrushConfig($drushConfigFiltered);
+        $drushRCEditor->writeDrushConfig($drushConfigFiltered);
     }
 
     protected function filterForPantheon($line)
     {
-        if (strpos($line, 'pantheon')) {
+        if (strpos($line, '.drush/pantheon/drush8') !== false) {
             return false;
         }
         return true;

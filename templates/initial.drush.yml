@@ -4,6 +4,3 @@ drush:
   paths:
     alias-path:
       - '${env.home}/.drush/sites'
-    include:
-      - '${env.home}/.drush/pantheon'
-
