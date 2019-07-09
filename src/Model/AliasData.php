@@ -34,9 +34,6 @@ class AliasData
 
     public function envName()
     {
-        if ($this->env_name == '*') {
-            return "'*'";
-        }
         return $this->env_name;
     }
 
