@@ -61,6 +61,7 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
             'target' => 'pantheon',
     ])
     {
+
         $options['mine-only'] = !$options['all'];
         $options['type'] = 'all';
         $options['db-url'] = false;
@@ -147,7 +148,7 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
             $emitters[] = new PrintingEmitter($this->output());
         }
         if ($this->emitterTypeMatches($emitterType, 'php')) {
-            $emitters[] = new AliasesDrushRcEmitter($location);
+            $emitters[] = new AliasesDrushRcEmitter($location, $base_dir);
         }
         if ($this->emitterTypeMatches($emitterType, 'yml')) {
             $emitters[] = new DrushSitesYmlEmitter($base_dir, $home, $target_name);

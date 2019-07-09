@@ -8,9 +8,10 @@ class AliasesDrushRcEmitter extends AliasesDrushRcBase
 {
     protected $location;
 
-    public function __construct($location)
+    public function __construct($location, $base_dir)
     {
         $this->location = $location;
+        $this->base_dir = $base_dir;
     }
 
     public function notificationMessage()
@@ -26,5 +27,21 @@ class AliasesDrushRcEmitter extends AliasesDrushRcBase
         $fs->mkdir(dirname($this->location));
 
         file_put_contents($this->location, $alias_file_contents);
+
+        // Add in our directory location to the Drush alias file search path
+        $DrushRCEditor = new DrushRcEditor($this->base_dir);
+        $drushConfig = $DrushRCEditor->getDrushConfig();
+        $drushConfigFiltered = implode(array_filter($drushConfig, array($this, 'filter_for_pantheon')));
+        $drushConfigFiltered .= "\n" . '$options["include"][] = drush_server_home() . "/.drush/pantheon/drush8";';
+        $DrushRCEditor->writeDrushConfig($drushConfigFiltered);
+
+    }
+
+    protected function filter_for_pantheon($line)
+    {
+        if (strpos($line, 'pantheon')) {
+            return false;
+        }
+        return true;
     }
 }

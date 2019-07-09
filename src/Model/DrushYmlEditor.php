@@ -47,7 +47,7 @@ class DrushYmlEditor
     }
 
     /**
-     * Write a modified drush.yml file back to disk.
+     * Write a modified drushrc.php file back to disk.
      */
     public function writeDrushConfig($drushYml)
     {
