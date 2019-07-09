@@ -42,8 +42,12 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
      *
      * @command alpha:aliases
      *
-     * @option boolean $print Print aliases only
-     * @option string $location Path and filename; default: ~/.drush/pantheon.aliases.drushrc.php will be used
+     * @option boolean $print Print aliases only (Drush 8 format)
+     * @option string $location Path and filename for php aliases.
+     * @option boolean $all Include all sites available, including team memberships.
+     * @option string $type Type of aliases to create: 'php', 'yml' or 'all'.
+     * @option string $base Base directory to write .yml aliases.
+     * @option string $target Base name to use to generate path to alias files.
      *
      * @return string|null
      *
@@ -54,23 +58,22 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
     public function aliases($options = [
         'print' => false,
         'location' => null,
-            'all' => false,
-            'org' => 'all',
-            'team' => false,
-            'base' => false,
-            'target' => 'pantheon',
+        'all' => false,
+        'type' => 'all',
+        'base' => '~/.drush',
+        'target' => 'pantheon',
     ])
     {
+        // Be forgiving about the spelling of 'yaml'
+        if ($options['type'] == 'yaml') {
+            $options['type'] = 'yml';
+        }
 
-        $options['mine-only'] = !$options['all'];
-        $options['type'] = 'all';
-        $options['db-url'] = false;
-
-        $this->log()->notice("Fetching information to build Drush 9 aliases...");
+        $this->log()->notice("Fetching information to build Drush aliases...");
         $site_ids = $this->getSites($options);
 
         // Collect information on the requested sites
-        $collection = $this->getAliasCollection($site_ids, $options['db-url'], true);
+        $collection = $this->getAliasCollection($site_ids);
 
         // Write the alias files (only of the type requested)
         $emitters = $this->getAliasEmitters($options);
@@ -89,7 +92,7 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
      */
     protected function getSites($options)
     {
-        if ($options['mine-only']) {
+        if (!$options['all']) {
             return $this->getSitesWithDirectMembership();
         }
         return $this->getAllSites($options);
@@ -103,8 +106,8 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
         $user = $this->session()->getUser();
         $this->sites()->fetch(
             [
-                'org_id' => (isset($options['org']) && ($options['org'] !== 'all')) ? $user->getOrganizationMemberships()->get($options['org'])->getOrganization()->id : null,
-                'team_only' => isset($options['team']) ? $options['team'] : false,
+                'org_id' => null,
+                'team_only' => false,
             ]
         );
         return $this->sites->ids();
@@ -135,7 +138,7 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
     {
         $config = $this->getConfig();
         $home = $config->get('user_home');
-        $base_dir = !empty($options['base']) ? $options['base'] : "$home/.drush";
+        $base_dir = preg_replace('#^~#', $home, $options['base']);
         $target_name = $options['target'];
         $emitterType = $options['type'];
         if ($options['print']) {
@@ -165,7 +168,7 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
         return $emitterType === $checkType;
     }
 
-    protected function getAliasCollection($site_ids, $include_db_url = true, $useWildcardForm = false)
+    protected function getAliasCollection($site_ids)
     {
         $collection = new AliasCollection();
 
@@ -174,34 +177,11 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
         $progressBar = new ProgressBar($out, count($site_ids));
 
         foreach ($site_ids as $site_id) {
-            //$this->log()->notice($site_id);
             $site = $this->sites->get($site_id);
-            //$this->log()->notice($site->get('id'));
             $site_name = $site->get('name');
 
-            if ($useWildcardForm) {
-                $alias = new AliasData($site_name, '*', $site_id);
-                $collection->add($alias);
-            } else {
-                $environments = $site->getEnvironments();
-                // $this->log()->notice(var_export($site->getEnvironments()->serialize(), true));
-
-                foreach ($site->getEnvironments()->all() as $env_name => $env) {
-                    $db_password = '';
-                    $db_port = '';
-                    if ($include_db_url) {
-                        $dbInfo = $env->databaseConnectionInfo();
-                        if (!empty($dbInfo)) {
-                            $db_password = $dbInfo['password'];
-                            $db_port = $dbInfo['port'];
-                        }
-                    }
-                    $alias = new AliasData($site_name, $env_name, $site_id, $db_password, $db_port);
-
-                    $collection->add($alias);
-                }
-            }
-
+            $alias = new AliasData($site_name, '*', $site_id);
+            $collection->add($alias);
             $progressBar->advance();
         }
         $progressBar->finish();
