@@ -9,8 +9,9 @@ function pantheon_policy_drush_sitealias_alter(&$alias_record) {
   // alias record to a local alias.
   if (isset($alias_record['remote-host'])) {
     $host = $alias_record['remote-host'];
-    // @todo: Only do this check if the host begins with 'appserver.'
-    // and ends in '.drush.in'.
+    if (!(preg_match('^appserver.', $host) && preg_match('.drush.in$', $host))) {
+      throw new \Exception("the host doesn't begin with 'appserver.' or doesn't end with '.drush.in'")
+    }
     $ip = gethostbyname($host);
     // If the return value of gethostbyname equals its input parameter,
     // that indicates failure.
