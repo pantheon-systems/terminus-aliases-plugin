@@ -39,7 +39,7 @@ class DrushRCEditor
             $drushRCContents = file_get_contents($drushRCPath);
         } else {
             $drushRCContents = '<?php' . "\n";
-            $newFile = fopen(getDrushRCPath(), $drushRCContents);
+            $newFile = fopen($this->getDrushRCPath(), $drushRCContents);
         }
         $drushRCContents = explode("\n", $drushRCContents);
         return $drushRCContents;
