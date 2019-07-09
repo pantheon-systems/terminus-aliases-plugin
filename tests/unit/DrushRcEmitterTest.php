@@ -37,8 +37,8 @@ class DrushRcEmitterTest extends TestCase
     public function testDrushrcEmitter($expectedPath, $rawAliasData, $withDbUrl)
     {
         $aliasCollection = Fixtures::aliasCollection($rawAliasData, $withDbUrl);
-        $base_dir = '/.drush';
-        $location = Fixtures::mktmpdir() . '/pantheon.aliases.drushrc.php';
+        $base_dir = Fixtures::mktmpdir() . '/.drush/';
+        $location = $base_dir . '/pantheon.aliases.drushrc.php';
 
         $emitter = new AliasesDrushRcEmitter($location, $base_dir);
         $emitter->write($aliasCollection);
