@@ -34,7 +34,6 @@ class AliasesDrushRcEmitter extends AliasesDrushRcBase
         $drushConfigFiltered = implode(array_filter($drushConfig, array($this, 'filterForPantheon')));
         $drushConfigFiltered .= "\n" . '$options["include"][] = drush_server_home() . "/.drush/pantheon/drush8";';
         $DrushRCEditor->writeDrushConfig($drushConfigFiltered);
-
     }
 
     protected function filterForPantheon($line)
