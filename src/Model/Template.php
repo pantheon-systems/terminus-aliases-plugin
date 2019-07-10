@@ -42,6 +42,16 @@ class Template
     }
 
     /**
+     * Copy a file from one place to another
+     */
+    public static function copy($copyfrom, $target_dir)
+    {
+        $path = static::path($copyfrom);
+        $copied = copy($path, $target_dir . '/' . basename($copyfrom));
+        return $copied;
+    }
+
+    /**
      * Template::process loads a template, makes all of the provided
      * replacements, and then removes the unwanted parts that are left
      * over per the rules below.

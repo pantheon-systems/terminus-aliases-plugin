@@ -24,7 +24,7 @@ class TemplateTest extends TestCase
         ];
 
         $siteYmlWithoutDbUrl = <<<EOT
-MULTIDEV:
+'MULTIDEV':
   host: appserver.MULTIDEV.00000000-0000-0000-0000-000000000000.drush.in
   paths:
     files: files
@@ -37,7 +37,7 @@ MULTIDEV:
 EOT;
 
         $siteYmlWithDbUrl = <<<EOT
-MULTIDEV:
+'MULTIDEV':
   host: appserver.MULTIDEV.00000000-0000-0000-0000-000000000000.drush.in
   options:
     db-allows-remote: true

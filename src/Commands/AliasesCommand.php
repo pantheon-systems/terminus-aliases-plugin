@@ -26,6 +26,8 @@ use Pantheon\TerminusAliases\Model\DrushSitesYmlEmitter;
 
 use Symfony\Component\Console\Helper\ProgressBar;
 
+use Pantheon\Terminus\Helpers\LocalMachineHelper;
+
 /**
  * Generate lots of aliases
  */
@@ -34,39 +36,57 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
     use SiteAwareTrait;
 
     /**
-     * Write Drush alias files. Drush 8 php format and Drush 9 yml format files supported.
+     * Generates Pantheon Drush aliases for sites on which the currently logged-in user is on the team.
+     *
+     * @authenticated
      *
      * @command alpha:aliases
      *
-     * @authenticated
+     * @option boolean $print Print aliases only (Drush 8 format)
+     * @option string $location Path and filename for php aliases.
+     * @option boolean $all Include all sites available, including team memberships.
+     * @option string $only Only generate aliases for sites in the specified comma-separated list. This option is only recommended for use in CI scripts.
+     * @option string $type Type of aliases to create: 'php', 'yml' or 'all'.
+     * @option string $base Base directory to write .yml aliases.
+     * @option string $target Base name to use to generate path to alias files.
+     * @option boolean $db-url Obsolete option included to preserve backwards compatibility. No longer needed.
+     *
+     * @return string|null
+     *
+     * @usage Saves Pantheon Drush aliases for sites on which the currently logged-in user is on the team to ~/.drush/pantheon.aliases.drushrc.php.
+     * @usage --print Displays Pantheon Drush 8 aliases for sites on which the currently logged-in user is on the team.
+     * @usage --location=<full_path> Saves Pantheon Drush 8 aliases for sites on which the currently logged-in user is on the team to <full_path>.
      */
-    public function allAliases(
-        $options = [
-            'mine-only' => false,
-            'org' => 'all',
-            'team' => false,
-            'type' => 'all',
-            'base' => false,
-            'print' => false,
-            'location' => null,
-            'db-url' => false,
-            'target' => 'pantheon',
-        ]
-    ) {
-        $this->log()->notice("Fetching list of available Pantheon sites...");
+    public function aliases($options = [
+        'print' => false,
+        'location' => null,
+        'all' => false,
+        'only' => '',
+        'type' => 'all',
+        'base' => '~/.drush',
+        'db-url' => true,
+        'target' => 'pantheon',
+    ])
+    {
+        // Be forgiving about the spelling of 'yaml'
+        if ($options['type'] == 'yaml') {
+            $options['type'] = 'yml';
+        }
+
+        $this->log()->notice("Fetching information to build Drush aliases...");
         $site_ids = $this->getSites($options);
 
-        // Do the faster thing if only yml aliases were requested
-        $useWildcardForm = $options['type'] == 'yml';
-
         // Collect information on the requested sites
-        $collection = $this->getAliasCollection($site_ids, $options['db-url'], $useWildcardForm);
+        $collection = $this->getAliasCollection($site_ids);
 
         // Write the alias files (only of the type requested)
-        $this->log()->notice("Writing alias files...");
         $emitters = $this->getAliasEmitters($options);
+        if (empty($emitters)) {
+            throw new \Exception('No emitters; nothing to do.');
+        }
         foreach ($emitters as $emitter) {
             $this->log()->debug("Emitting aliases via {emitter}", ['emitter' => get_class($emitter)]);
+            $this->log()->notice($emitter->notificationMessage());
             $emitter->write($collection);
         }
     }
@@ -76,10 +96,26 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
      */
     protected function getSites($options)
     {
-        if ($options['mine-only']) {
+        if (!empty($options['only'])) {
+            return $this->getSpecifiedSites(explode(',', $options['only']));
+        }
+        if (!$options['all']) {
             return $this->getSitesWithDirectMembership();
         }
         return $this->getAllSites($options);
+    }
+
+    /**
+     * Fetch the sites listed on the command line.
+     */
+    protected function getSpecifiedSites($siteList)
+    {
+        $result = [];
+        foreach ($siteList as $siteName) {
+            $site = $this->sites()->get($siteName);
+            $result[] = $site->id;
+        }
+        return $result;
     }
 
     /**
@@ -90,8 +126,8 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
         $user = $this->session()->getUser();
         $this->sites()->fetch(
             [
-                'org_id' => (isset($options['org']) && ($options['org'] !== 'all')) ? $user->getOrganizationMemberships()->get($options['org'])->getOrganization()->id : null,
-                'team_only' => isset($options['team']) ? $options['team'] : false,
+                'org_id' => null,
+                'team_only' => false,
             ]
         );
         return $this->sites->ids();
@@ -122,7 +158,7 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
     {
         $config = $this->getConfig();
         $home = $config->get('user_home');
-        $base_dir = !empty($options['base']) ? $options['base'] : "$home/.drush";
+        $base_dir = preg_replace('#^~#', $home, $options['base']);
         $target_name = $options['target'];
         $emitterType = $options['type'];
         if ($options['print']) {
@@ -135,7 +171,7 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
             $emitters[] = new PrintingEmitter($this->output());
         }
         if ($this->emitterTypeMatches($emitterType, 'php')) {
-            $emitters[] = new AliasesDrushRcEmitter($location);
+            $emitters[] = new AliasesDrushRcEmitter($location, $base_dir);
         }
         if ($this->emitterTypeMatches($emitterType, 'yml')) {
             $emitters[] = new DrushSitesYmlEmitter($base_dir, $home, $target_name);
@@ -152,7 +188,7 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
         return $emitterType === $checkType;
     }
 
-    protected function getAliasCollection($site_ids, $include_db_url = true, $useWildcardForm = false)
+    protected function getAliasCollection($site_ids)
     {
         $collection = new AliasCollection();
 
@@ -161,34 +197,11 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
         $progressBar = new ProgressBar($out, count($site_ids));
 
         foreach ($site_ids as $site_id) {
-            //$this->log()->notice($site_id);
             $site = $this->sites->get($site_id);
-            //$this->log()->notice($site->get('id'));
             $site_name = $site->get('name');
 
-            if ($useWildcardForm) {
-                $alias = new AliasData($site_name, '*', $site_id);
-                $collection->add($alias);
-            } else {
-                $environments = $site->getEnvironments();
-                // $this->log()->notice(var_export($site->getEnvironments()->serialize(), true));
-
-                foreach ($site->getEnvironments()->all() as $env_name => $env) {
-                    $db_password = '';
-                    $db_port = '';
-                    if ($include_db_url) {
-                        $dbInfo = $env->databaseConnectionInfo();
-                        if (!empty($dbInfo)) {
-                            $db_password = $dbInfo['password'];
-                            $db_port = $dbInfo['port'];
-                        }
-                    }
-                    $alias = new AliasData($site_name, $env_name, $site_id, $db_password, $db_port);
-
-                    $collection->add($alias);
-                }
-            }
-
+            $alias = new AliasData($site_name, '*', $site_id);
+            $collection->add($alias);
             $progressBar->advance();
         }
         $progressBar->finish();
