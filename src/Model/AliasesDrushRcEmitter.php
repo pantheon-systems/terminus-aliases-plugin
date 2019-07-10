@@ -38,14 +38,11 @@ class AliasesDrushRcEmitter extends AliasesDrushRcBase
         //copy policy docs
         $policyFromPath = 'policy/drush8/pantheon_policy.drush.inc';
         $policyToPath = $this->base_dir . "/pantheon/drush8";
-        if (is_dir($policyToPath)) {
-            rmdir($policyToPath . '/pantheon_policy.drush.inc');
-        }
         if (!file_exists($policyToPath)) {
             mkdir($policyToPath, 0777, true);
         }
         $policyTemplate = new Template();
-        $copied = $policyTemplate->copy($policyFromPath, $policyToPath . '/pantheon_policy.drush.inc');
+        $copied = $policyTemplate->copy($policyFromPath, $policyToPath);
     }
 
     protected function filterForPantheon($line)
