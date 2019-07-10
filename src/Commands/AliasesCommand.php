@@ -45,9 +45,11 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
      * @option boolean $print Print aliases only (Drush 8 format)
      * @option string $location Path and filename for php aliases.
      * @option boolean $all Include all sites available, including team memberships.
+     * @option string $only Only generate aliases for sites in the specified comma-separated list. This option is only recommended for use in CI scripts.
      * @option string $type Type of aliases to create: 'php', 'yml' or 'all'.
      * @option string $base Base directory to write .yml aliases.
      * @option string $target Base name to use to generate path to alias files.
+     * @option boolean $db-url Obsolete option included to preserve backwards compatibility. No longer needed.
      *
      * @return string|null
      *
@@ -59,8 +61,10 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
         'print' => false,
         'location' => null,
         'all' => false,
+        'only' => '',
         'type' => 'all',
         'base' => '~/.drush',
+        'db-url' => true,
         'target' => 'pantheon',
     ])
     {
@@ -92,10 +96,26 @@ class AliasesCommand extends TerminusCommand implements SiteAwareInterface
      */
     protected function getSites($options)
     {
+        if (!empty($options['only'])) {
+            return $this->getSpecifiedSites(explode(',', $options['only']));
+        }
         if (!$options['all']) {
             return $this->getSitesWithDirectMembership();
         }
         return $this->getAllSites($options);
+    }
+
+    /**
+     * Fetch the sites listed on the command line.
+     */
+    protected function getSpecifiedSites($siteList)
+    {
+        $result = [];
+        foreach ($siteList as $siteName) {
+            $site = $this->sites()->get($siteName);
+            $result[] = $site->id;
+        }
+        return $result;
     }
 
     /**

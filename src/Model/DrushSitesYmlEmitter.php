@@ -56,7 +56,7 @@ class DrushSitesYmlEmitter implements AliasEmitterInterface
 
         //copy policy docs
         $policyFromPath = 'policy/Commands/PantheonAliasPolicyCommands.php';
-        $policyToPath = $this->base_dir . "/Commands";
+        $policyToPath = $this->base_dir . "/pantheon/Commands";
         $fs = new Filesystem();
         if (!file_exists($policyToPath)) {
             $fs->mkdir($policyToPath);
