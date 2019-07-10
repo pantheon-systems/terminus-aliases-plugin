@@ -1,5 +1,11 @@
 <?php
 
+use Drush\Log\LogLevel;
+
+if (version_compare(DRUSH_VERSION, '8.3.0') < 0) {
+  drush_log(dt('You are using an old version of Drush (' . DRUSH_VERSION . '). Please upgrade to 8.3.0 or later.'), LogLevel::WARNING);
+}
+
 /**
  * Adjust the contents of a site alias.
  */
