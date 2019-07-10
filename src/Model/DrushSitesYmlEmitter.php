@@ -54,7 +54,7 @@ class DrushSitesYmlEmitter implements AliasEmitterInterface
         $drushConfigFiltered['drush']['paths']['include'][] = '${env.home}/.drush/pantheon';
         $drushYmlEditor->writeDrushConfig($drushConfigFiltered);
 
-        //copy policy docs 
+        //copy policy docs
         $policyFromPath = 'policy/Commands/PantheonAliasPolicyCommands.php';
         $policyToPath = $this->base_dir . "/Commands";
         if (is_dir($policyToPath)) {
@@ -65,7 +65,6 @@ class DrushSitesYmlEmitter implements AliasEmitterInterface
         }
         $policyTemplate = new Template();
         $copied = $policyTemplate->copy($policyFromPath, $policyToPath . "/PantheonAliasPolicyCommands.php");
-
     }
 
     protected function filterForSites($line)
