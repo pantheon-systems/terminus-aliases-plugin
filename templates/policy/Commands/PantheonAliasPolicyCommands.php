@@ -42,7 +42,7 @@ class PantheonAliasPolicyCommands extends DrushCommands implements SiteAliasMana
         if ($self->isRemote()) {
             $host = $self->get('host');
 
-            if (!(preg_match('^appserver\..*\.drush\.in$', $host))) {
+            if (!(preg_match('#^appserver\..*\.drush\.in$#', $host))) {
                 return;
             }
 
