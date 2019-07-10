@@ -47,7 +47,7 @@ class Template
     public static function copy($copyfrom, $target_dir)
     {
         $path = static::path($copyfrom);
-        $copied = copy($path, $target_dir);
+        $copied = copy($path, $target_dir . basename($copyfrom));
         return $copied;
     }
 
