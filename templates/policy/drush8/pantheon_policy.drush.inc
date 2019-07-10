@@ -2,8 +2,12 @@
 
 use Drush\Log\LogLevel;
 
-if (version_compare(DRUSH_VERSION, '8.3.0') < 0) {
-  drush_log(dt('You are using an old version of Drush (' . DRUSH_VERSION . '). Please upgrade to 8.3.0 or later.'), LogLevel::WARNING);
+if ((version_compare(DRUSH_VERSION, '8.3.0') < 0) && (!getenv('DISABLE_PANTHEON_DRUSH_VERSION_WARNING'))) {
+  register_shutdown_function(
+    function() {
+      drush_log(dt('Drush version (' . DRUSH_VERSION . ') is incompatible with Pantheon aliases. Upgrade to Drush 8.3.0 or 9.6.0 or later. (To disable this warning, set the environment variable DISABLE_PANTHEON_DRUSH_VERSION_WARNING=1)'), LogLevel::WARNING);
+    }
+  );
 }
 
 /**
