@@ -28,7 +28,6 @@ class TemplateTest extends TestCase
   host: appserver.MULTIDEV.00000000-0000-0000-0000-000000000000.drush.in
   paths:
     files: files
-    drush-script: drush9
   uri: MULTIDEV-MYSITE.pantheonsite.io
   user: MULTIDEV.00000000-0000-0000-0000-000000000000
   ssh:
@@ -44,7 +43,6 @@ EOT;
     db-url: 'mysql://pantheon:SECRETSECRET@dbserver.MULTIDEV.00000000-0000-0000-0000-000000000000.drush.in:10101/pantheon'
   paths:
     files: files
-    drush-script: drush9
   uri: MULTIDEV-MYSITE.pantheonsite.io
   user: MULTIDEV.00000000-0000-0000-0000-000000000000
   ssh:

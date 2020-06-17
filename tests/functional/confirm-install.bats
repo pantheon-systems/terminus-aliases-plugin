@@ -18,6 +18,6 @@
 
 @test "run alpha:aliases command" {
   run terminus alpha:aliases
-  [[ $output == *"Collecting information about Pantheon sites and environments"* ]]
+  [[ $output == *"Fetching site information to build Drush aliases"* ]]
   [ "$status" -eq 0 ]
 }
